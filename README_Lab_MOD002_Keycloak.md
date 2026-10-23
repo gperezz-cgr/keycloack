@@ -45,29 +45,36 @@ Además, el JWT contenía `iss` de `myrealm`, `azp=lab-client`, `aud=account` y 
 
 ## 2. Arquitectura y conceptos
 
-```text
-Terminal del VPS (cliente de prueba)
-   |
-   | HTTPS POST /auth0/realms/myrealm/protocol/openid-connect/token
-   | grant_type=client_credentials
-   | client_id=lab-client + client_secret (no imprimir)
-   v
-Apache HTTPS :443 (certificado Let's Encrypt)
-   |
-   | ProxyPass /auth0/
-   v
-127.0.0.1:8084 (host AlmaLinux)
-   |
-   | Docker 8084 -> 8080
-   v
-keycloak-dev (Keycloak 26.7.4)
-   |
-   +-- realm master: administración global, usuario kc-admin
-   |
-   +-- realm myrealm: cliente lab-client
-              |
-              +-- Service account habilitada
-              +-- Access Token Bearer (JWT)
+```mermaid
+flowchart TD
+    A["Terminal del VPS<br/>Cliente de prueba"]
+    B["Apache HTTPS :443<br/>Certificado Let's Encrypt"]
+    C["AlmaLinux 9.8<br/>127.0.0.1:8084"]
+    D["Docker<br/>keycloak-dev · Keycloak 26.7.4"]
+    E["Realm master<br/>Administración · kc-admin"]
+    F["Realm myrealm<br/>Cliente lab-client"]
+    G["Service Account<br/>Habilitada"]
+    H["Access Token Bearer<br/>JWT · 300 segundos"]
+
+    A -->|"POST /auth0/realms/myrealm/protocol/openid-connect/token<br/>grant_type=client_credentials<br/>client_id + client_secret"| B
+    B -->|"ProxyPass /auth0/"| C
+    C -->|"Docker 8084 → 8080"| D
+
+    D --> E
+    D --> F
+    F --> G
+    G -->|"Autenticación exitosa"| H
+    H -.->|"HTTP 200 · access_token"| A
+
+    style A fill:#dbeafe,stroke:#2563eb,color:#1e40af
+    style B fill:#fef3c7,stroke:#d97706,color:#92400e
+    style C fill:#e0e7ff,stroke:#6366f1,color:#3730a3
+    style D fill:#d1fae5,stroke:#059669,color:#065f46
+    style E fill:#f1f5f9,stroke:#64748b,color:#334155
+    style F fill:#f3e8ff,stroke:#9333ea,color:#6b21a8
+    style G fill:#f3e8ff,stroke:#9333ea,color:#6b21a8
+    style H fill:#dcfce7,stroke:#16a34a,color:#166534
+
 ```
 
 **¿Por qué reutilizar esta arquitectura?** MOD001 ya demostró que Apache entrega HTTPS válido y redirige al contenedor que escucha únicamente en loopback. No era necesario exponer el puerto 8084 públicamente, recrear el contenedor ni cambiar el proxy para crear un realm y un cliente.
