@@ -17,7 +17,7 @@ Desplegar **Keycloak 26.7.4** en un contenedor Docker, accesible **solo desde el
 
 ### Flujo de red
 
-```
+```mermaid
 flowchart TD
     A["Navegador del administrador"]
     B["Apache HTTP Server<br/>VirtualHost gperezz.planeta0.com:443"]
