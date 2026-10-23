@@ -17,17 +17,28 @@ Desplegar **Keycloak 26.7.4** en un contenedor Docker, accesible **solo desde el
 
 ### Flujo de red
 
-```flowchart TD
-
-    A["Navegador del administrador"] -->|"HTTPS :443 · Let's Encrypt"| B["Apache · VirtualHost gperezz.planeta0.com:443"]
-    B -->|"ProxyPass /auth0/"| C["VPS AlmaLinux · 127.0.0.1:8084"]
-    C -->|"Docker · puerto 8084 → 8080"| D["Contenedor keycloak-dev · Keycloak 26.7.4"]
-    D -->|"Ruta /auth0/"| E["Consola administrativa /auth0/admin/"]
-
 ```
+flowchart TD
+    A["Navegador del administrador"]
+    B["Apache HTTP Server<br/>VirtualHost gperezz.planeta0.com:443"]
+    C["VPS AlmaLinux 9.8<br/>127.0.0.1:8084"]
+    D["Docker<br/>Contenedor keycloak-dev"]
+    E["Keycloak 26.7.4<br/>Puerto interno 8080"]
+    F["Consola administrativa<br/>/auth0/admin/"]
 
+    A -->|"HTTPS :443 · Let's Encrypt"| B
+    B -->|"ProxyPass /auth0/"| C
+    C -->|"Mapeo Docker 8084 → 8080"| D
+    D --> E
+    E -->|"Ruta base /auth0/"| F
 
-
+    style A fill:#dbeafe,stroke:#2563eb,color:#1e40af
+    style B fill:#fef3c7,stroke:#d97706,color:#92400e
+    style C fill:#e0e7ff,stroke:#6366f1,color:#3730a3
+    style D fill:#d1fae5,stroke:#059669,color:#065f46
+    style E fill:#d1fae5,stroke:#059669,color:#065f46
+    style F fill:#f3e8ff,stroke:#9333ea,color:#6b21a8
+```
 
 
 El puerto 8084 **no se publica en la interfaz pública**: `127.0.0.1:8084:8080` lo limita al loopback del servidor.
